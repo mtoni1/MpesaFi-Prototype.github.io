@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MpesaFi - DeFi for Kenya</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 667px;
+            background: #000;
+            border-radius: 25px;
+            padding: 10px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .app-container {
+            height: calc(100% - 44px);
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .screen {
+            display: none;
+            padding: 20px;
+            height: 100%;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .balance-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .balance-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .action-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .transaction-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .transaction-info h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .transaction-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .transaction-amount {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .amount-positive {
+            color: #28a745;
+        }
+
+        .amount-negative {
+            color: #dc3545;
+        }
+
+        .lending-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .lending-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .lending-rate {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+
+        .lending-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: slideDown 0.3s ease-in-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .feature-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <span>9:41 AM</span>
+                <span>MpesaFi</span>
+                <span>100%</span>
+            </div>
+            
+            <div class="app-container">
+                <!-- Home Screen -->
+                <div class="screen active" id="home">
+                    <div class="header">
+                        <h1>MpesaFi</h1>
+                        <p>Decentralized Finance for Kenya</p>
+                    </div>
+                    
+                    <div class="balance-card">
+                        <div class="balance-amount">KES 15,234.50</div>
+                        <div class="balance-label">Available Balance</div>
+                    </div>
+                    
+                    <div class="action-grid">
+                        <div class="action-card" onclick="showScreen('send')">
+                            <div class="action-icon">💸</div>
+                            <div class="action-title">Send Money</div>
+                            <div class="action-desc">P2P transfers</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('receive')">
+                            <div class="action-icon">📥</div>
+                            <div class="action-title">Receive</div>
+                            <div class="action-desc">Get payments</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('lending')">
+                            <div class="action-icon">🏦</div>
+                            <div class="action-title">DeFi Lending</div>
+                            <div class="action-desc">Earn interest</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('cross-border')">
+                            <div class="action-icon">🌍</div>
+                            <div class="action-title">Cross-Border</div>
+                            <div class="action-desc">Low-cost remittances</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('merchant')">
+                            <div class="action-icon">🏪</div>
+                            <div class="action-title">Pay Bills</div>
+                            <div class="action-desc">Utilities & merchants</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('bank')">
+                            <div class="action-icon">🏦</div>
+                            <div class="action-title">Bank Transfer</div>
+                            <div class="action-desc">Fiat on/off ramps</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('defi')">
+                            <div class="action-icon">💎</div>
+                            <div class="action-title">DeFi Invest</div>
+                            <div class="action-desc">Yield farming & staking</div>
+                        </div>
+                        
+                        <div class="action-card" onclick="showScreen('stablecoin')">
+                            <div class="action-icon">🪙</div>
+                            <div class="action-title">KES Stable</div>
+                            <div class="action-desc">Mint/redeem KESS</div>
+                        </div>
+                    </div>
+                    
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">🔒</div>
+                            <div class="feature-text">Non-Custodial</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">⚡</div>
+                            <div class="feature-text">Layer 2 Fast</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">💰</div>
+                            <div class="feature-text">Low Fees</div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🏪</div>
+                            <div class="feature-text">Smart Contracts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Recent Transactions</div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>John Kamau</h4>
+                                <p>P2P Transfer • 2 hours ago</p>
+                            </div>
+                            <div class="transaction-amount amount-negative">-KES 2,500</div>
+                        </div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>DeFi Lending Pool</h4>
+                                <p>Interest Earned • 1 day ago</p>
+                            </div>
+                            <div class="transaction-amount amount-positive">+KES 150</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Send Money Screen -->
+                <div class="screen" id="send">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>Send Money</h1>
+                        <p>Fast & Low-Cost Transfers</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Recipient Phone Number</label>
+                        <input type="tel" class="form-input" placeholder="+254 700 000 000" id="recipient">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Amount (KES)</label>
+                        <input type="number" class="form-input" placeholder="0.00" id="amount">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message (Optional)</label>
+                        <input type="text" class="form-input" placeholder="Payment for..." id="message">
+                    </div>
+                    
+                    <div class="balance-card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Transaction Fee:</span>
+                            <span style="color: #28a745;">KES 2.50</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>Total:</span>
+                            <span id="total">KES 0.00</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="sendMoney()">Send Money</button>
+                </div>
+                
+                <!-- Receive Money Screen -->
+                <div class="screen" id="receive">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>Receive Money</h1>
+                        <p>Share your payment details</p>
+                    </div>
+                    
+                    <div class="balance-card" style="text-align: center;">
+                        <div style="font-size: 100px; margin-bottom: 20px;">📱</div>
+                        <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Your MpesaFi Address</div>
+                        <div style="font-size: 14px; color: #666; word-break: break-all; margin-bottom: 20px;">
+                            0x742d35Cc6634C0532925a3b8D4A149c8A15b1234
+                        </div>
+                        <button class="btn" onclick="copyAddress()">Copy Address</button>
+                    </div>
+                    
+                    <div class="balance-card">
+                        <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">QR Code</div>
+                        <div style="text-align: center;">
+                            <div style="width: 150px; height: 150px; background: #f0f0f0; margin: 0 auto; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                                📱
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DeFi Lending Screen -->
+                <div class="screen" id="lending">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>DeFi Lending</h1>
+                        <p>Earn passive income</p>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Savings Pool</div>
+                        <div class="lending-rate">8.5% APY</div>
+                        <div class="lending-desc">Secure lending pool with automatic compound interest</div>
+                        <button class="btn" onclick="showDeposit()">Deposit Funds</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Micro-Lending</div>
+                        <div class="lending-rate">12.3% APY</div>
+                        <div class="lending-desc">Higher yield peer-to-peer lending for small businesses</div>
+                        <button class="btn" onclick="showDeposit()">Join Pool</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Your Positions</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Deposited:</span>
+                            <span style="font-weight: bold;">KES 5,000</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Earned:</span>
+                            <span style="color: #28a745; font-weight: bold;">KES 425</span>
+                        </div>
+                        <button class="btn btn-secondary" onclick="showWithdraw()">Withdraw</button>
+                    </div>
+                </div>
+                
+                <!-- Cross-Border Screen -->
+                <div class="screen" id="cross-border">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>Cross-Border</h1>
+                        <p>Global remittances made simple</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Send to Country</label>
+                        <select class="form-input" id="country">
+                            <option>Uganda</option>
+                            <option>Tanzania</option>
+                            <option>Rwanda</option>
+                            <option>United Kingdom</option>
+                            <option>United States</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Amount (KES)</label>
+                        <input type="number" class="form-input" placeholder="0.00" id="cross-amount">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Recipient Details</label>
+                        <input type="text" class="form-input" placeholder="Full name" id="recipient-name">
+                        <input type="text" class="form-input" placeholder="Phone or bank account" id="recipient-account" style="margin-top: 10px;">
+                    </div>
+                    
+                    <div class="balance-card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Exchange Rate:</span>
+                            <span>1 KES = 0.0075 USD</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Transfer Fee:</span>
+                            <span style="color: #28a745;">KES 45 (0.3%)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>Recipient Gets:</span>
+                            <span>$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="sendCrossBorder()">Send Money</button>
+                </div>
+                
+                <!-- Merchant & Bill Payments Screen -->
+                <div class="screen" id="merchant">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>Pay Bills</h1>
+                        <p>Utilities & merchant payments</p>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Utilities</div>
+                        <div class="action-grid">
+                            <div class="action-card" onclick="payBill('KPLC')">
+                                <div class="action-icon">💡</div>
+                                <div class="action-title">KPLC</div>
+                                <div class="action-desc">Electricity</div>
+                            </div>
+                            <div class="action-card" onclick="payBill('Nairobi Water')">
+                                <div class="action-icon">💧</div>
+                                <div class="action-title">Water</div>
+                                <div class="action-desc">NCWSC</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Merchants</div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>Carrefour Supermarket</h4>
+                                <p>Shopping • 0.1% cashback</p>
+                            </div>
+                            <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px;">Pay</button>
+                        </div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>Uber Kenya</h4>
+                                <p>Transport • 0.05% cashback</p>
+                            </div>
+                            <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px;">Pay</button>
+                        </div>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Recent Bill Payments</div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <h4>KPLC - Electricity</h4>
+                                <p>Account: 123456789 • 2 days ago</p>
+                            </div>
+                            <div class="transaction-amount amount-negative">-KES 2,350</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bank Interoperability Screen -->
+                <div class="screen" id="bank">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>Bank Transfer</h1>
+                        <p>Fiat on/off ramps</p>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Deposit from Bank</div>
+                        <div class="form-group">
+                            <label class="form-label">Select Bank</label>
+                            <select class="form-input">
+                                <option>Equity Bank</option>
+                                <option>KCB Bank</option>
+                                <option>Safaricom M-Pesa</option>
+                                <option>Co-operative Bank</option>
+                                <option>Standard Chartered</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (KES)</label>
+                            <input type="number" class="form-input" placeholder="0.00">
+                        </div>
+                        <button class="btn" onclick="bankDeposit()">Deposit to MpesaFi</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Withdraw to Bank</div>
+                        <div class="form-group">
+                            <label class="form-label">Your Bank Account</label>
+                            <select class="form-input">
+                                <option>Equity Bank - ***1234</option>
+                                <option>KCB Bank - ***5678</option>
+                                <option>Add New Account</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (KES)</label>
+                            <input type="number" class="form-input" placeholder="0.00">
+                        </div>
+                        <div class="balance-card">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>Processing Fee:</span>
+                                <span style="color: #28a745;">KES 10</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                                <span>Processing Time:</span>
+                                <span>Instant via smart contract</span>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="bankWithdraw()">Withdraw to Bank</button>
+                    </div>
+                </div>
+                
+                <!-- DeFi Investment Options Screen -->
+                <div class="screen" id="defi">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>DeFi Investments</h1>
+                        <p>Advanced yield strategies</p>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Yield Farming</div>
+                        <div class="lending-rate">24.5% APY</div>
+                        <div class="lending-desc">KES-USDC liquidity pool farming</div>
+                        <button class="btn" onclick="showYieldFarm()">Start Farming</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Staking Pool</div>
+                        <div class="lending-rate">15.2% APY</div>
+                        <div class="lending-desc">Stake MPFI tokens for governance rewards</div>
+                        <button class="btn" onclick="showStaking()">Stake Tokens</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">DeFi Insurance</div>
+                        <div class="lending-rate">3.8% Premium</div>
+                        <div class="lending-desc">Protect your DeFi investments</div>
+                        <button class="btn" onclick="showInsurance()">Get Coverage</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Your DeFi Portfolio</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Total Invested:</span>
+                            <span style="font-weight: bold;">KES 8,500</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Total Earned:</span>
+                            <span style="color: #28a745; font-weight: bold;">KES 1,240</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Insurance Coverage:</span>
+                            <span style="color: #007bff; font-weight: bold;">KES 10,000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- KES Stablecoin Screen -->
+                <div class="screen" id="stablecoin">
+                    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+                    <div class="header">
+                        <h1>KES Stablecoin</h1>
+                        <p>KESS - Tokenized Kenyan Shilling</p>
+                    </div>
+                    
+                    <div class="balance-card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <div>
+                                <div style="font-size: 18px; font-weight: bold;">KESS Balance</div>
+                                <div style="font-size: 24px; color: #28a745;">12,500 KESS</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 18px; font-weight: bold;">KES Balance</div>
+                                <div style="font-size: 24px; color: #007bff;">2,734.50 KES</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; font-size: 14px; color: #666;">
+                            1 KESS = 1 KES (Pegged via smart contract)
+                        </div>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Mint KESS</div>
+                        <div class="lending-desc">Convert KES to KESS stablecoin for DeFi usage</div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (KES)</label>
+                            <input type="number" class="form-input" placeholder="0.00" id="mint-amount">
+                        </div>
+                        <button class="btn" onclick="mintKESS()">Mint KESS</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Redeem KESS</div>
+                        <div class="lending-desc">Convert KESS back to KES</div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (KESS)</label>
+                            <input type="number" class="form-input" placeholder="0.00" id="redeem-amount">
+                        </div>
+                        <button class="btn btn-secondary" onclick="redeemKESS()">Redeem to KES</button>
+                    </div>
+                    
+                    <div class="lending-card">
+                        <div class="lending-title">Smart Contract Details</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                            <strong>Contract Address:</strong><br>
+                            0x1234...abcd (Polygon Network)
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                            <strong>Collateral Ratio:</strong> 100% (Fully backed)
+                        </div>
+                        <div style="font-size: 12px; color: #666;">
+                            <strong>Audit Status:</strong> ✅ Verified by CertiK
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBalance = 15234.50;
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
+        
+        function sendMoney() {
+            const recipient = document.getElementById('recipient').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            
+            if (!recipient || !amount) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (amount > currentBalance) {
+                showToast('Insufficient balance', 'error');
+                return;
+            }
+            
+            // Simulate transaction
+            currentBalance -= (amount + 2.50); // Include fee
+            updateBalance();
+            showToast(`Successfully sent KES ${amount.toFixed(2)} to ${recipient}`);
+            
+            // Reset form
+            document.getElementById('recipient').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('message').value = '';
+            
+            setTimeout(() => showScreen('home'), 2000);
+        }
+        
+        function copyAddress() {
+            const address = '0x742d35Cc6634C0532925a3b8D4A149c8A15b1234';
+            navigator.clipboard.writeText(address).then(() => {
+                showToast('Address copied to clipboard!');
+            });
+        }
+        
+        function showDeposit() {
+            const amount = prompt('Enter amount to deposit (KES):');
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                if (parseFloat(amount) > currentBalance) {
+                    showToast('Insufficient balance', 'error');
+                    return;
+                }
+                currentBalance -= parseFloat(amount);
+                updateBalance();
+                showToast(`Successfully deposited KES ${parseFloat(amount).toFixed(2)} to lending pool`);
+            }
+        }
+        
+        function showWithdraw() {
+            showToast('Withdrawal will be available in 24 hours (Smart contract lock period)');
+        }
+        
+        function sendCrossBorder() {
+            const country = document.getElementById('country').value;
+            const amount = parseFloat(document.getElementById('cross-amount').value);
+            const recipientName = document.getElementById('recipient-name').value;
+            
+            if (!amount || !recipientName) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (amount > currentBalance) {
+                showToast('Insufficient balance', 'error');
+                return;
+            }
+            
+            currentBalance -= (amount + 45); // Include cross-border fee
+            updateBalance();
+            showToast(`Successfully sent KES ${amount.toFixed(2)} to ${recipientName} in ${country}`);
+            
+            setTimeout(() => showScreen('home'), 2000);
+        }
+        
+        function updateBalance() {
+            document.querySelector('.balance-amount').textContent = `KES ${currentBalance.toFixed(2)}`;
+        }
+        
+        // New functions for missing features
+        function payBill(provider) {
+            const amount = prompt(`Enter amount to pay ${provider}:`);
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                if (parseFloat(amount) > currentBalance) {
+                    showToast('Insufficient balance', 'error');
+                    return;
+                }
+                currentBalance -= parseFloat(amount);
+                updateBalance();
+                showToast(`Successfully paid KES ${parseFloat(amount).toFixed(2)} to ${provider}`);
+            }
+        }
+        
+        function bankDeposit() {
+            const amount = prompt('Enter amount to deposit from bank:');
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                currentBalance += parseFloat(amount);
+                updateBalance();
+                showToast(`Successfully deposited KES ${parseFloat(amount).toFixed(2)} from bank`);
+            }
+        }
+        
+        function bankWithdraw() {
+            const amount = prompt('Enter amount to withdraw to bank:');
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                if (parseFloat(amount) + 10 > currentBalance) {
+                    showToast('Insufficient balance (including KES 10 fee)', 'error');
+                    return;
+                }
+                currentBalance -= (parseFloat(amount) + 10);
+                updateBalance();
+                showToast(`Successfully withdrew KES ${parseFloat(amount).toFixed(2)} to bank`);
+            }
+        }
+        
+        function showYieldFarm() {
+            showToast('Yield farming pool requires minimum KES 1,000 investment');
+        }
+        
+        function showStaking() {
+            showToast('Staking requires MPFI governance tokens (coming soon)');
+        }
+        
+        function showInsurance() {
+            showToast('DeFi insurance coverage starting from KES 100/month');
+        }
+        
+        function mintKESS() {
+            const amount = parseFloat(document.getElementById('mint-amount').value);
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            if (amount > currentBalance) {
+                showToast('Insufficient KES balance', 'error');
+                return;
+            }
+            currentBalance -= amount;
+            updateBalance();
+            showToast(`Successfully minted ${amount.toFixed(2)} KESS tokens`);
+            document.getElementById('mint-amount').value = '';
+        }
+        
+        function redeemKESS() {
+            const amount = parseFloat(document.getElementById('redeem-amount').value);
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            // Simulate having KESS tokens
+            currentBalance += amount;
+            updateBalance();
+            showToast(`Successfully redeemed ${amount.toFixed(2)} KESS to KES`);
+            document.getElementById('redeem-amount').value = '';
+        }
+        
+        // Update total amount when sending money
+        document.getElementById('amount')?.addEventListener('input', function() {
+            const amount = parseFloat(this.value) || 0;
+            const fee = 2.50;
+            const total = amount + fee;
+            document.getElementById('total').textContent = `KES ${total.toFixed(2)}`;
+        });
+        
+        // Update cross-border recipient amount
+        document.getElementById('cross-amount')?.addEventListener('input', function() {
+            const amount = parseFloat(this.value) || 0;
+            const rate = 0.0075;
+            const fee = 45;
+            const recipientAmount = (amount - fee) * rate;
+            const recipientSpan = document.querySelector('#cross-border .balance-card span:last-child');
+            if (recipientSpan) {
+                recipientSpan.textContent = `$${recipientAmount.toFixed(2)}`;
+            }
+        });
+    </script>
+</body>
+</html>
